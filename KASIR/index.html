@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kasir · Djatiee</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+  <!-- CSS eksternal -->
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  
+  <header>
+    <div class="brand">
+      <!-- Logo kotak hijau "ZL" -->
+      <div class="brand-dot">EJ</div>
+      <div class="brand-text">
+        <div class="name">Enggal Jati</div>
+        <div class="sub">Toko HP &amp; Aksesoris · Jl. Bahagia Selalu 13</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <!-- Diisi oleh JavaScript (updateClock) -->
+      <span class="date-pill" id="date-pill">—</span>
+      <span id="clock">--:--:--</span>
+    </div>
+  </header>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       KONTEN UTAMA — dua kolom: form (kiri) + riwayat (kanan)
+       ════════════════════════════════════════════════════════ -->
+  <main>
+
+    <!-- ── KOLOM KIRI: FORM INPUT ──────────────────────────── -->
+    <div>
+
+      <!-- Blok 1: Data Pembeli -->
+      <div class="card">
+        <div class="sec-label">Data Pembeli</div>
+        <div class="field-grid">
+          <div class="field">
+            <label for="id-pembeli">ID Pembeli</label>
+            <input type="text" id="id-pembeli" placeholder="Contoh: P001"/>
+          </div>
+          <div class="field">
+            <label for="nama-pembeli">Nama Pembeli</label>
+            <input type="text" id="nama-pembeli" placeholder="Nama lengkap"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blok 2: Data Barang + Uang Konsumen -->
+      <div class="card">
+        <div class="sec-label">Data Barang</div>
+        <div class="field-grid">
+          <div class="field">
+            <label for="id-barang">ID Barang</label>
+            <input type="text" id="id-barang" placeholder="Contoh: B001"/>
+          </div>
+          <div class="field">
+            <label for="nama-barang">Nama Barang</label>
+            <input type="text" id="nama-barang" placeholder="Nama produk"/>
+          </div>
+          <div class="field">
+            <label for="harga-satuan">Harga Satuan (Rp)</label>
+            <input type="number" id="harga-satuan" placeholder="0" min="0" step="1000"/>
+          </div>
+          <div class="field">
+            <label for="jumlah-beli">Jumlah Beli</label>
+            <input type="number" id="jumlah-beli" placeholder="1" min="1" value="1"/>
+          </div>
+        </div>
+
+        <hr class="form-sep"/>
+
+        <div class="field">
+          <label for="uang-konsumen">Uang Konsumen (Rp)</label>
+          <input type="number" id="uang-konsumen" placeholder="0" min="0" step="10000"/>
+        </div>
+      </div>
+
+      <!-- Blok 3: Ringkasan + Tombol -->
+      <div class="card">
+        <div class="sec-label">Ringkasan</div>
+
+        <!-- Kotak perhitungan otomatis -->
+        <div class="ringkasan">
+
+          <!-- Jumlah Belanja = harga × jumlah -->
+          <div class="r-row">
+            <span class="lbl">Jumlah Belanja</span>
+            <span class="val" id="r-jumlah">Rp 0</span>
+          </div>
+
+          <!-- Diskon: badge "5%" muncul otomatis jika syarat terpenuhi -->
+          <div class="r-row">
+            <span class="lbl" style="display:flex; align-items:center; gap:6px">
+              Diskon <span id="badge-diskon">5%</span>
+            </span>
+            <span class="val" style="color:var(--red)" id="r-diskon">- Rp 0</span>
+          </div>
+
+          <hr class="r-sep"/>
+
+          <!-- Uang yang dibawa pembeli -->
+          <div class="r-row">
+            <span class="lbl">Uang Konsumen</span>
+            <span class="val" id="r-uang">Rp 0</span>
+          </div>
+
+        </div><!-- /ringkasan -->
+
+        <!-- Kotak Total Bayar (menonjol dengan warna mint) -->
+        <div class="total-box">
+          <span class="lbl">Total Bayar</span>
+          <span class="val" id="r-total">Rp 0</span>
+        </div>
+
+        <!-- Kotak Kembalian -->
+        <div class="kembalian-box">
+          <span class="lbl">Kembalian</span>
+          <span class="val" id="r-kembalian">Rp 0</span>
+        </div>
+
+        <!-- Tombol aksi — fungsi ada di script.js -->
+        <button class="btn btn-mint" onclick="proses()">⚡ Proses Transaksi</button>
+        <button class="btn btn-outline" onclick="resetForm()">↺ Reset Form</button>
+
+      </div><!-- /card ringkasan -->
+
+    </div><!-- /kolom kiri -->
+
+
+    <!-- ── KOLOM KANAN: RIWAYAT TRANSAKSI ────────────────── -->
+    <div class="riwayat-wrap">
+      <div class="riwayat-head">
+        <span class="title">Riwayat Hari Ini</span>
+        <!-- Diperbarui oleh renderRiwayat() di script.js -->
+        <span id="jml-transaksi">0 struk</span>
+      </div>
+      <!-- Daftar struk diisi oleh renderRiwayat() -->
+      <div id="riwayat-list">
+        <div class="empty">
+          <div class="empty-icon">🧾</div>
+          Belum ada transaksi.<br/>Yuk mulai yang pertama!
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       MODAL 1: KONFIRMASI STRUK
+       Muncul setelah tombol "Proses Transaksi" ditekan.
+       Isi struk dirender oleh fungsi proses() di script.js.
+       ════════════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box">
+      <h2>Konfirmasi Struk</h2>
+      <p class="sub">Periksa kembali sebelum disimpan.</p>
+      <!-- Konten struk diisi oleh JS -->
+      <div class="struk-preview" id="modal-struk"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" style="border-color:var(--line2)" onclick="tutupModal()">Batal</button>
+        <button class="btn btn-mint" style="width:auto; margin:0; flex:1" onclick="simpanTransaksi()">Simpan ✓</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       MODAL 2: INPUT DATA PEMBELI LAGI? (Ya / Tidak)
+       Muncul setelah transaksi berhasil disimpan.
+       Sesuai soal: "INPUT DATA PEMBELI LAGI (Ya/Tidak)?"
+       ════════════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modal-lagi-overlay">
+    <div class="modal-box">
+      <div class="modal-lagi-inner">
+        <div class="lagi-icon">✅</div>
+        <h2>Transaksi Tersimpan!</h2>
+        <p>Input data pembeli lagi?</p>
+        <div class="lagi-actions">
+          <!-- Tidak: tutup modal saja -->
+          <button class="btn btn-outline" style="margin:0" onclick="jawabTidak()">Tidak</button>
+          <!-- Ya: tutup modal + fokus ke field pertama -->
+          <button class="btn btn-mint" style="margin:0" onclick="jawabYa()">Ya, Lanjut →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- JavaScript eksternal — letakkan di bawah body agar DOM sudah siap -->
+  <script src="script.js"></script>
+
+</body>
+</html>

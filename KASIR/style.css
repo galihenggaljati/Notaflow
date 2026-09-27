@@ -1,0 +1,444 @@
+/* ══════════════════════════════════════════════════════
+   RESET
+   Menghapus margin dan padding bawaan browser
+   agar tampilan konsisten di semua browser
+   ══════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box; /* ukuran elemen termasuk padding & border, bukan di luar */
+  margin: 0;              /* hapus margin bawaan */
+  padding: 0;             /* hapus padding bawaan */
+}
+
+/* ══════════════════════════════════════════════════════
+   CSS VARIABLES
+   Semua warna, font, dan ukuran disimpan di sini.
+   Pakai var(--nama) di mana saja untuk memakainya.
+   Ganti nilainya di sini untuk ubah tema secara global.
+   ══════════════════════════════════════════════════════ */
+:root {
+  --bg:       #0F1117;   /* warna latar paling gelap — halaman utama */
+  --bg2:      #161921;   /* sedikit lebih terang — dipakai di card/panel */
+  --bg3:      #1E2230;   /* lebih terang lagi — dipakai di input & ringkasan */
+
+  --line:     rgba(255, 255, 255, .07);   /* garis sangat halus */
+  --line2:    rgba(255, 255, 255, .13);   /* garis sedikit lebih terlihat */
+
+  --mint:     #39E8A2;                    /* hijau mint — warna aksen utama */
+  --mint-dk:  #1DB877;                    /* mint lebih gelap (cadangan) */
+  --mint-bg:  rgba(57, 232, 162, .08);    /* mint sangat transparan untuk background */
+
+  --red:      #FF5A5A;                    /* merah — untuk error & diskon */
+  --red-bg:   rgba(255, 90, 90, .08);     /* merah transparan untuk background badge */
+
+  --text:     #F0F2F5;   /* teks utama — hampir putih */
+  --muted:    #6B7280;   /* teks redup — untuk label kecil */
+  --muted2:   #9CA3AF;   /* teks semi-redup — sedikit lebih terang dari muted */
+
+  --mono:     'JetBrains Mono', monospace;   /* font untuk angka agar lurus rapi */
+  --sans:     'Syne', sans-serif;            /* font utama untuk semua teks */
+
+  --r: 12px;   /* radius sudut global — dipakai di card, modal, dll */
+}
+
+/* ══════════════════════════════════════════════════════
+   BODY
+   Pengaturan dasar seluruh halaman
+   ══════════════════════════════════════════════════════ */
+body {
+  font-family: var(--sans);  /* font utama dari variabel */
+  background: var(--bg);     /* latar gelap */
+  color: var(--text);        /* warna teks default */
+  min-height: 100vh;         /* minimal setinggi layar */
+  font-size: 14px;           /* ukuran teks dasar */
+  line-height: 1.5;          /* jarak antar baris */
+}
+
+/* Scrollbar kustom — hanya bekerja di Chrome & Edge */
+::-webkit-scrollbar { width: 4px; }                              /* lebar scrollbar */
+::-webkit-scrollbar-track { background: var(--bg); }             /* latar jalur scrollbar */
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; } /* gagang scrollbar */
+
+/* ══════════════════════════════════════════════════════
+   HEADER
+   Bilah navigasi atas yang sticky (tetap terlihat saat scroll)
+   ══════════════════════════════════════════════════════ */
+header {
+  display: flex;                      /* susun anak-elemen secara horizontal */
+  align-items: center;                /* rata tengah vertikal */
+  justify-content: space-between;     /* logo di kiri, jam di kanan */
+  padding: 0 28px;                    /* jarak kiri-kanan */
+  height: 60px;                       /* tinggi header */
+  border-bottom: 1px solid var(--line); /* garis bawah tipis */
+  background: var(--bg);              /* latar sama dengan body */
+  position: sticky;                   /* menempel di atas saat scroll */
+  top: 0;                             /* posisi tempel: atas layar */
+  z-index: 50;                        /* di atas konten lain agar tidak tertimpa */
+}
+
+.brand { display: flex; align-items: center; gap: 12px; } /* wrapper logo + teks */
+
+/* Kotak logo bertuliskan "ZL" */
+.brand-dot {
+  width: 32px; height: 32px;          /* ukuran kotak */
+  border-radius: 8px;                 /* sudut membulat */
+  background: var(--mint);            /* latar hijau mint */
+  display: flex; align-items: center; justify-content: center; /* teks di tengah */
+  font-weight: 700; font-size: 14px; color: #0F1117; /* teks hitam tebal */
+  flex-shrink: 0;                     /* tidak boleh mengecil */
+}
+
+.brand-text .name { font-weight: 700; font-size: 15px; letter-spacing: -.3px; } /* nama toko */
+.brand-text .sub  { font-size: 11px; color: var(--muted); letter-spacing: .4px; } /* alamat toko */
+
+.header-right { display: flex; align-items: center; gap: 10px; } /* wrapper tanggal + jam */
+
+/* Jam digital di header — diisi oleh updateClock() di script.js */
+#clock {
+  font-family: var(--mono);                        /* font monospace agar digit tidak geser */
+  font-size: 13px;
+  color: var(--mint);                              /* teks hijau mint */
+  background: var(--mint-bg);                      /* latar mint transparan */
+  border: 1px solid rgba(57, 232, 162, .2);        /* border mint tipis */
+  padding: 5px 12px;
+  border-radius: 8px;
+  letter-spacing: .5px;                            /* sedikit renggang antar karakter */
+  min-width: 80px;                                 /* lebar minimum agar tidak melompat */
+  text-align: center;
+}
+
+/* Pill tanggal di sebelah kiri jam — diisi oleh updateClock() di script.js */
+.date-pill {
+  font-size: 11px; color: var(--muted2);
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  padding: 5px 10px; border-radius: 8px;
+}
+
+/* ══════════════════════════════════════════════════════
+   LAYOUT UTAMA
+   Dua kolom: form input (kiri fleksibel) + riwayat (kanan 380px)
+   Diatur dengan CSS Grid
+   ══════════════════════════════════════════════════════ */
+main {
+  display: grid;
+  grid-template-columns: 1fr 380px;   /* kolom kiri mengisi sisa ruang, kanan tetap 380px */
+  gap: 20px;                           /* jarak antar kolom */
+  max-width: 1140px;                   /* lebar maksimum konten */
+  margin: 0 auto;                      /* tengahkan secara horizontal */
+  padding: 24px 28px;                  /* jarak dari tepi */
+}
+
+/* ══════════════════════════════════════════════════════
+   LABEL SECTION
+   Judul kecil di atas setiap blok, contoh: "DATA PEMBELI"
+   Dilengkapi garis horizontal di sebelah kanannya
+   ══════════════════════════════════════════════════════ */
+.sec-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1.5px;              /* huruf renggang agar terasa seperti label */
+  text-transform: uppercase;          /* semua huruf kapital */
+  color: var(--muted);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px; /* agar garis ::after sejajar */
+}
+/* Garis horizontal yang mengisi sisa ruang di kanan label */
+.sec-label::after {
+  content: '';          /* elemen kosong — diperlukan agar ::after tampil */
+  flex: 1;              /* mengisi semua sisa ruang */
+  height: 1px;
+  background: var(--line);
+}
+
+/* ══════════════════════════════════════════════════════
+   CARD
+   Kotak panel dengan latar gelap dan border tipis
+   ══════════════════════════════════════════════════════ */
+.card {
+  background: var(--bg2);            /* sedikit lebih terang dari body */
+  border: 1px solid var(--line);     /* border tipis */
+  border-radius: var(--r);           /* sudut membulat */
+  padding: 20px;                     /* jarak dalam */
+}
+.card + .card { margin-top: 14px; } /* jarak antar card yang berdekatan */
+
+/* ══════════════════════════════════════════════════════
+   FORM INPUT
+   Grid dua kolom untuk menyusun field berdampingan
+   ══════════════════════════════════════════════════════ */
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;   /* dua kolom sama lebar */
+  gap: 10px;                         /* jarak antar field */
+}
+
+.field { display: flex; flex-direction: column; gap: 5px; } /* label di atas, input di bawah */
+
+.field label {
+  font-size: 11px; font-weight: 600;
+  color: var(--muted2); letter-spacing: .4px;
+  text-transform: uppercase;         /* label selalu kapital */
+}
+
+.field input {
+  height: 40px; padding: 0 12px;
+  background: var(--bg3);            /* latar input lebih gelap dari card */
+  border: 1px solid var(--line2);    /* border agak terlihat */
+  border-radius: 8px;
+  font-family: var(--sans); font-size: 14px;
+  color: var(--text);
+  outline: none;                     /* hilangkan outline biru bawaan browser */
+  transition: border-color .15s, background .15s; /* animasi halus saat fokus */
+}
+.field input::placeholder { color: var(--muted); } /* warna teks placeholder */
+/* Efek fokus: border berubah hijau mint saat input diklik */
+.field input:focus {
+  border-color: var(--mint);
+  background: rgba(57, 232, 162, .04); /* latar sedikit kehijuan */
+}
+
+/* Input bertipe number pakai font mono agar digit tetap lurus */
+input[type="number"] { font-family: var(--mono); }
+
+/* Garis pemisah horizontal di dalam form */
+.form-sep { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
+
+/* ══════════════════════════════════════════════════════
+   KOTAK RINGKASAN PERHITUNGAN
+   Menampilkan hasil hitung otomatis dari script.js
+   ══════════════════════════════════════════════════════ */
+.ringkasan {
+  background: var(--bg3); /* sedikit lebih gelap dari card */
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 4px;
+}
+
+/* Satu baris hasil: label di kiri, nilai di kanan */
+.r-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0;
+}
+.r-row .lbl { font-size: 12px; color: var(--muted2); }                  /* teks label */
+.r-row .val { font-family: var(--mono); font-size: 13px; font-weight: 500; } /* nilai angka */
+
+/* Garis putus-putus sebagai pemisah di dalam ringkasan */
+.r-sep { border: none; border-top: 1px dashed var(--line2); margin: 8px 0; }
+
+/* Kotak Total Bayar — paling menonjol, menggunakan warna mint */
+.total-box {
+  background: var(--mint-bg);                        /* latar mint transparan */
+  border: 1px solid rgba(57, 232, 162, .25);         /* border mint */
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 10px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.total-box .lbl { font-size: 12px; font-weight: 600; color: var(--mint); }           /* label mint */
+.total-box .val { font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--mint); } /* angka besar */
+
+/* Kotak Kembalian — di bawah total bayar */
+.kembalian-box {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; border-radius: 8px; margin-top: 8px;
+  background: var(--bg3);
+}
+.kembalian-box .lbl { font-size: 12px; color: var(--muted2); }
+.kembalian-box .val { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--mint); }
+/* Catatan: warna .val bisa diubah ke --red oleh script.js jika uang tidak cukup */
+
+/* Badge "5%" di samping label Diskon
+   Secara default DISEMBUNYIKAN (display:none)
+   Script.js akan mengubahnya jadi inline-block jika belanja >= 3.500.000 */
+#badge-diskon {
+  display: none;                                   /* tersembunyi secara default */
+  font-size: 10px; font-weight: 700; letter-spacing: .3px;
+  background: var(--red-bg); color: var(--red);    /* warna merah */
+  border: 1px solid rgba(255, 90, 90, .25);
+  padding: 2px 8px; border-radius: 20px;           /* pil membulat */
+}
+
+/* ══════════════════════════════════════════════════════
+   TOMBOL
+   Ada dua varian: btn-mint (utama) dan btn-outline (sekunder)
+   ══════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 7px;                    /* jarak antara ikon dan teks */
+  height: 44px; padding: 0 20px;
+  border-radius: 10px;
+  font-family: var(--sans); font-size: 14px; font-weight: 600;
+  cursor: pointer;             /* cursor tangan saat hover */
+  border: none;
+  transition: all .15s;        /* animasi halus semua properti */
+  letter-spacing: -.1px;
+}
+
+/* Tombol utama: latar hijau mint, teks hitam */
+.btn-mint {
+  background: var(--mint); color: #0F1117;
+  width: 100%; margin-top: 14px; /* lebar penuh, jarak atas */
+}
+.btn-mint:hover  { background: #50EDAF; }         /* lebih terang saat hover */
+.btn-mint:active { transform: scale(.98); }        /* sedikit mengecil saat diklik */
+
+/* Tombol sekunder: transparan dengan border */
+.btn-outline {
+  background: transparent; color: var(--muted2);
+  border: 1px solid var(--line2);
+  width: 100%; margin-top: 8px;
+}
+.btn-outline:hover { background: var(--bg3); color: var(--text); } /* latar muncul saat hover */
+
+/* ══════════════════════════════════════════════════════
+   PANEL RIWAYAT (kolom kanan)
+   Menampilkan daftar transaksi yang sudah tersimpan
+   ══════════════════════════════════════════════════════ */
+.riwayat-wrap {
+  display: flex; flex-direction: column; /* susun header + list secara vertikal */
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;                      /* sembunyikan konten yang meluber */
+  height: fit-content;                   /* tinggi menyesuaikan isi */
+  max-height: calc(100vh - 120px);       /* maksimal setinggi viewport minus header */
+}
+
+/* Header panel riwayat: judul + badge jumlah struk */
+.riwayat-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;  /* tidak boleh mengecil meski konten di bawahnya panjang */
+}
+.riwayat-head .title { font-weight: 700; font-size: 14px; }
+
+/* Badge hitungan struk — teksnya diperbarui oleh renderRiwayat() di script.js */
+#jml-transaksi {
+  font-size: 11px; font-weight: 700;
+  background: var(--mint-bg); color: var(--mint);
+  border: 1px solid rgba(57, 232, 162, .2);
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* Area daftar transaksi yang bisa di-scroll
+   innerHTML-nya diisi ulang oleh renderRiwayat() di script.js */
+#riwayat-list {
+  overflow-y: auto;            /* scroll vertikal jika isi melebihi tinggi */
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 6px;
+  flex: 1;                     /* mengisi sisa tinggi panel */
+}
+
+/* ══════════════════════════════════════════════════════
+   ITEM RIWAYAT
+   Satu kartu per transaksi, dibuat oleh renderRiwayat()
+   ══════════════════════════════════════════════════════ */
+.struk-item {
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: border-color .15s;          /* animasi border saat hover */
+}
+.struk-item:hover { border-color: var(--line2); } /* border sedikit lebih terlihat saat hover */
+
+/* Baris atas: nama pembeli (kiri) + total bayar (kanan) */
+.struk-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 4px;
+}
+.struk-nama  { font-weight: 600; font-size: 13px; }                               /* nama pembeli */
+.struk-total { font-family: var(--mono); font-size: 13px; color: var(--mint); font-weight: 600; } /* total hijau */
+.struk-meta  { font-size: 11px; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; } /* detail kecil */
+
+/* Chip nomor urut: #1, #2, dst */
+.struk-nomor {
+  font-family: var(--mono); font-size: 10px;
+  background: var(--bg); color: var(--muted);
+  padding: 1px 6px; border-radius: 4px;
+}
+
+/* Label merah kecil "DISKON 5%" — muncul jika t.adaDiskon === true */
+.struk-diskon {
+  font-size: 10px; font-weight: 700;
+  background: var(--red-bg); color: var(--red);
+  padding: 1px 6px; border-radius: 20px;
+}
+
+/* ══════════════════════════════════════════════════════
+   EMPTY STATE
+   Tampil di #riwayat-list saat array riwayat[] masih kosong
+   ══════════════════════════════════════════════════════ */
+.empty {
+  text-align: center; padding: 40px 16px;
+  color: var(--muted); font-size: 13px;
+}
+.empty-icon { font-size: 32px; margin-bottom: 10px; } /* ikon besar di atas teks */
+
+/* ══════════════════════════════════════════════════════
+   MODAL — popup yang menutupi seluruh layar
+   Ada dua modal: konfirmasi struk & pertanyaan "lagi?"
+   ══════════════════════════════════════════════════════ */
+.modal-overlay {
+  display: none;          /* TERSEMBUNYI secara default */
+  position: fixed;        /* menutupi layar, tidak ikut scroll */
+  inset: 0;               /* shorthand: top:0 right:0 bottom:0 left:0 */
+  background: rgba(0, 0, 0, .5);  /* latar gelap transparan di belakang pop up */
+  z-index: 200;           /* di atas semua elemen lain */
+  align-items: center; justify-content: center; /* pop up muncul di tengah layar */
+}
+/* JS menambah class .show untuk menampilkan modal */
+.modal-overlay.show { display: flex; } /* flex agar pop up bisa ditengahkan */
+
+/* Kotak isi pop up — putih polos */
+.modal-box {
+  background: #ffffff;       /* putih polos */
+  border: 1px solid #cccccc; /* border abu-abu tipis */
+  border-radius: 8px;        /* sudut sedikit membulat */
+  padding: 24px;
+  width: 360px;              /* lebar tetap */
+  color: #333333;            /* warna teks gelap agar terbaca di latar putih */
+}
+.modal-box h2   { font-size: 17px; font-weight: 700; margin-bottom: 4px; color: #111111; }
+.modal-box .sub { font-size: 13px; color: #888888; margin-bottom: 20px; }
+
+/* Area preview struk — polos, font mono seperti struk kasir
+   innerHTML-nya dibangun oleh fungsi proses() di script.js */
+.struk-preview {
+  background: #f9f9f9;     /* abu-abu sangat muda */
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+  padding: 14px;
+  font-family: var(--mono); /* font monospace agar kolom teks lurus rapi */
+  font-size: 12px;
+  line-height: 2;           /* jarak antar baris longgar agar mudah dibaca */
+  margin-bottom: 20px;
+  color: #333333;           /* teks gelap di latar putih */
+  white-space: pre-wrap;    /* jaga spasi agar rata kiri kanan seperti struk */
+}
+
+/* Garis putus-putus pemisah di dalam struk */
+.struk-divider { border: none; border-top: 1px dashed #cccccc; margin: 8px 0; }
+
+.modal-actions { display: flex; gap: 8px; }          /* baris tombol batal + simpan */
+.modal-actions .btn { flex: 1; margin: 0; }          /* tombol sama lebar */
+
+/* Modal "lagi?" — konten terpusat di tengah */
+.modal-lagi-inner { text-align: center; }
+.modal-lagi-inner .lagi-icon { font-size: 44px; margin-bottom: 14px; }
+.modal-lagi-inner h2 { font-size: 17px; font-weight: 700; margin-bottom: 6px; color: #111111; }
+.modal-lagi-inner p  { font-size: 13px; color: #888888; margin-bottom: 24px; line-height: 1.7; }
+
+.lagi-actions { display: flex; gap: 8px; }           /* baris tombol ya + tidak */
+.lagi-actions .btn { flex: 1; margin: 0; }           /* tombol sama lebar */
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE
+   Saat lebar layar <= 740px (HP/tablet kecil):
+   - layout jadi 1 kolom (form di atas, riwayat di bawah)
+   - field-grid jadi 1 kolom (tiap field full width)
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 740px) {
+  main { grid-template-columns: 1fr; padding: 16px; }  /* 1 kolom, padding lebih kecil */
+  .field-grid { grid-template-columns: 1fr; }           /* tiap field penuh */
+}
